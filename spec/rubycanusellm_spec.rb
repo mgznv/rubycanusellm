@@ -32,4 +32,37 @@ RSpec.describe RubyCanUseLLM do
       expect(described_class.configuration.provider).to be_nil
     end
   end
+
+  describe "Configuration#validate!" do
+    it "raises error when provider is nil" do
+      expect { described_class.configuration.validate! }
+        .to raise_error(RubyCanUseLLM::Error, /provider is required/)
+    end
+
+    it "raises error when api_key is nil" do
+      described_class.configure { |c| c.provider = :openai }
+
+      expect { described_class.configuration.validate! }
+        .to raise_error(RubyCanUseLLM::Error, /api_key is required/)
+    end
+
+    it "raises error for unsupported provider" do
+      described_class.configure do |c|
+        c.provider = :unknown
+        c.api_key = "test-key"
+      end
+
+      expect { described_class.configuration.validate! }
+        .to raise_error(RubyCanUseLLM::Error, /Unknown provider/)
+    end
+
+    it "passes with valid configuration" do
+      described_class.configure do |c|
+        c.provider = :openai
+        c.api_key = "test-key"
+      end
+
+      expect { described_class.configuration.validate! }.not_to raise_error
+    end
+  end
 end
