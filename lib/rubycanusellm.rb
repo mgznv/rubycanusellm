@@ -2,10 +2,9 @@
 
 require_relative "rubycanusellm/version"
 require_relative "rubycanusellm/configuration"
-
+require_relative "rubycanusellm/errors"
 module RubyCanUseLLM
-  class Error < StandardError; end
-
+  
   class << self
     def configuration
       @configuration ||= Configuration.new
