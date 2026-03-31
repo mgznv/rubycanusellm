@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "webmock/rspec"
 require "rubycanusellm"
 
 RSpec.configure do |config|
