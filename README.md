@@ -1,34 +1,49 @@
-# Rubycanusellm
+# RubyCanUseLLM
 
-TODO: Delete this and the text below, and describe your gem
+A unified Ruby client for multiple LLM providers with generators. One interface, every LLM.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rubycanusellm`. To experiment with that code, run `bin/console` for an interactive prompt.
+## The Problem
 
-## Installation
+Every time a Ruby developer wants to add LLMs to their app, they start from scratch: pick a provider gem, learn its API, write a service object, handle errors, parse responses. Switch providers? Rewrite everything.
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+## The Solution
 
-Install the gem and add to the application's Gemfile by executing:
+RubyCanUseLLM gives you two things:
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+1. **Unified client** — One interface that works the same across OpenAI, Anthropic, and more. Switch providers by changing a string, not your code.
+2. **Generators** — Commands that scaffold ready-to-use boilerplate. You don't start from zero, you start with something that works.
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+## Quick Start
+```bash
+gem install rubycanusellm
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+rubycanusellm generate:config
+rubycanusellm generate:completion
+```
 
-## Usage
+That's it. You have a working completion service in your project.
 
-TODO: Write usage instructions here
+## Roadmap
+
+- [x] Project setup
+- [ ] Configuration module
+- [ ] OpenAI provider
+- [ ] Anthropic provider
+- [ ] `generate:config` command
+- [ ] `generate:completion` command
+- [ ] v0.1.0 release
 
 ## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```bash
+git clone https://github.com/mgznv/rubycanusellm.git
+cd rubycanusellm
+bin/setup
+bundle exec rspec
+```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rubycanusellm.
+Bug reports and pull requests are welcome on GitHub at https://github.com/mgznv/rubycanusellm.
 
 ## License
 
