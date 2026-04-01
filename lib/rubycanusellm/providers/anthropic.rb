@@ -1,0 +1,96 @@
+# frozen_string_literal: true
+
+require "net/http"
+require "json"
+require "uri"
+
+module RubyCanUseLLM
+  module Providers
+    class Anthropic < Base
+      API_URL = "https://api.anthropic.com/v1/messages"
+
+      def chat(messages, **options)
+        system, user_messages = extract_system(messages)
+        body = build_body(system, user_messages, options)
+        response = request(body)
+        parse_response(response)
+      end
+
+      private
+
+      def extract_system(messages)
+        system = nil
+        user_messages = []
+
+        messages.each do |msg|
+          if msg[:role].to_s == "system"
+            system = msg[:content]
+          else
+            user_messages << msg
+          end
+        end
+
+        [system, user_messages]
+      end
+
+      def build_body(system, messages, options)
+        body = {
+          model: options[:model] || config.model || "claude-sonnet-4-20250514",
+          messages: format_messages(messages),
+          max_tokens: options[:max_tokens] || 1024
+        }
+        body[:system] = system if system
+        body
+      end
+
+      def format_messages(messages)
+        messages.map do |msg|
+          { role: msg[:role].to_s, content: msg[:content] }
+        end
+      end
+
+      def request(body)
+        uri = URI(API_URL)
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        http.read_timeout = config.timeout
+
+        req = Net::HTTP::Post.new(uri)
+        req["x-api-key"] = config.api_key
+        req["anthropic-version"] = "2023-06-01"
+        req["Content-Type"] = "application/json"
+        req.body = body.to_json
+
+        handle_response(http.request(req))
+      rescue Net::ReadTimeout, Net::OpenTimeout
+        raise TimeoutError, "Request to Anthropic timed out after #{config.timeout}s"
+      end
+
+      def handle_response(response)
+        case response.code.to_i
+        when 200
+          JSON.parse(response.body)
+        when 401
+          raise AuthenticationError, "Invalid Anthropic API key"
+        when 429
+          raise RateLimitError, "Anthropic rate limit exceeded"
+        else
+          raise ProviderError, "Anthropic error (#{response.code}): #{response.body}"
+        end
+      end
+
+      def parse_response(data)
+        content = data.dig("content", 0, "text")
+        usage = data["usage"]
+
+        Response.new(
+          content: content,
+          model: data["model"],
+          input_tokens: usage["input_tokens"],
+          output_tokens: usage["output_tokens"],
+          raw: data
+        )
+      end
+    end
+  end
+end

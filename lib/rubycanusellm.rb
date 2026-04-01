@@ -6,10 +6,12 @@ require_relative "rubycanusellm/errors"
 require_relative "rubycanusellm/response"
 require_relative "rubycanusellm/providers/base"
 require_relative "rubycanusellm/providers/openai"
+require_relative "rubycanusellm/providers/anthropic"
 
 module RubyCanUseLLM
   PROVIDERS = {
-    openai: Providers::OpenAI
+    openai: Providers::OpenAI,
+    anthropic: Providers::Anthropic
   }.freeze
 
   class << self
