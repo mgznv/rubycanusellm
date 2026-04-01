@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0] - 2026-04-01
+
+### Added
+
+- Streaming support for OpenAI and Anthropic providers via `stream: true` option and block interface
+- `RubyCanUseLLM::Chunk` object yielded on each streamed token, with `content` and `role` attributes
+
 ## [0.1.0] - 2025-04-01
 
 ### Added

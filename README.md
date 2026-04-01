@@ -98,6 +98,16 @@ messages = [
 RubyCanUseLLM.chat(messages, model: "gpt-4o", temperature: 0.5)
 ```
 
+### Streaming
+Pass `stream: true` with a block to receive tokens as they arrive:
+```ruby
+RubyCanUseLLM.chat(messages, stream: true) do |chunk|
+  print chunk.content
+end
+```
+
+Each `chunk` is a `RubyCanUseLLM::Chunk` with `content` (the token text) and `role` (`"assistant"`). Works with both OpenAI and Anthropic.
+
 ### Response
 ```ruby
 response.content       # "Hello! How can I help?"
@@ -139,7 +149,7 @@ end
 - [x] `generate:config` command
 - [x] `generate:completion` command
 - [x] v0.1.0 release
-- [ ] Streaming support
+- [x] Streaming support
 - [ ] Embeddings + `generate:embedding`
 - [ ] Mistral and Ollama providers
 - [ ] Tool calling

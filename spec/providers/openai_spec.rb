@@ -57,5 +57,56 @@ RSpec.describe RubyCanUseLLM::Providers::OpenAI do
       expect { provider.chat([{ role: :user, content: "Hi" }]) }
         .to raise_error(RubyCanUseLLM::ProviderError)
     end
+
+    context "with stream: true" do
+      let(:sse_body) do
+        [
+          %(data: {"id":"chatcmpl-1","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant","content":""},"index":0}]}),
+          %(data: {"id":"chatcmpl-1","object":"chat.completion.chunk","choices":[{"delta":{"content":"Hello"},"index":0}]}),
+          %(data: {"id":"chatcmpl-1","object":"chat.completion.chunk","choices":[{"delta":{"content":"!"},"index":0}]}),
+          "data: [DONE]",
+          ""
+        ].join("\n")
+      end
+
+      it "yields Chunks with content" do
+        stub_request(:post, "https://api.openai.com/v1/chat/completions")
+          .to_return(status: 200, body: sse_body)
+
+        chunks = []
+        provider.chat([{ role: :user, content: "Hi" }], stream: true) do |chunk|
+          chunks << chunk
+        end
+
+        expect(chunks.size).to eq(2)
+        expect(chunks).to all(be_a(RubyCanUseLLM::Chunk))
+        expect(chunks.map(&:content)).to eq(["Hello", "!"])
+        expect(chunks.map(&:role)).to all(eq("assistant"))
+      end
+
+      it "sends stream: true in request body" do
+        stub_request(:post, "https://api.openai.com/v1/chat/completions")
+          .with { |req| JSON.parse(req.body)["stream"] == true }
+          .to_return(status: 200, body: sse_body)
+
+        provider.chat([{ role: :user, content: "Hi" }], stream: true) { |_chunk| }
+      end
+
+      it "raises AuthenticationError on 401" do
+        stub_request(:post, "https://api.openai.com/v1/chat/completions")
+          .to_return(status: 401, body: "Unauthorized")
+
+        expect { provider.chat([{ role: :user, content: "Hi" }], stream: true) { |_chunk| } }
+          .to raise_error(RubyCanUseLLM::AuthenticationError)
+      end
+
+      it "raises RateLimitError on 429" do
+        stub_request(:post, "https://api.openai.com/v1/chat/completions")
+          .to_return(status: 429, body: "Too Many Requests")
+
+        expect { provider.chat([{ role: :user, content: "Hi" }], stream: true) { |_chunk| } }
+          .to raise_error(RubyCanUseLLM::RateLimitError)
+      end
+    end
   end
 end

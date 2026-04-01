@@ -4,6 +4,7 @@ require_relative "rubycanusellm/version"
 require_relative "rubycanusellm/configuration"
 require_relative "rubycanusellm/errors"
 require_relative "rubycanusellm/response"
+require_relative "rubycanusellm/chunk"
 require_relative "rubycanusellm/providers/base"
 require_relative "rubycanusellm/providers/openai"
 require_relative "rubycanusellm/providers/anthropic"
@@ -35,8 +36,8 @@ module RubyCanUseLLM
       end.new(configuration)
     end
 
-    def chat(messages, **options)
-      client.chat(messages, **options)
+    def chat(messages, **options, &block)
+      client.chat(messages, **options, &block)
     end
   end
 end
