@@ -61,6 +61,7 @@ module RubyCanUseLLM
         req = Net::HTTP::Post.new(uri)
         req["Authorization"] = "Bearer #{config.api_key}"
         req["Content-Type"] = "application/json"
+        req["Accept-Encoding"] = "identity"
         req.body = body.to_json
 
         http.request(req) do |response|

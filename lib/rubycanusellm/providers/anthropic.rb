@@ -81,6 +81,7 @@ module RubyCanUseLLM
         req["x-api-key"] = config.api_key
         req["anthropic-version"] = "2023-06-01"
         req["Content-Type"] = "application/json"
+        req["Accept-Encoding"] = "identity"
         req.body = body.to_json
 
         http.request(req) do |response|
