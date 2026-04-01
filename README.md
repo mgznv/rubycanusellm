@@ -29,8 +29,8 @@ That's it. You have a working completion service in your project.
 - [x] Configuration module
 - [x] OpenAI provider
 - [x] Anthropic provider
-- [ ] `generate:config` command
-- [ ] `generate:completion` command
+- [x] `generate:config` command
+- [x] `generate:completion` command
 - [ ] v0.1.0 release
 
 ## Development
