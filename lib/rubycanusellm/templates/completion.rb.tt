@@ -1,0 +1,20 @@
+# frozen_string_literal: true
+
+class CompletionService
+  def call(prompt, **options)
+    messages = [
+      { role: :user, content: prompt }
+    ]
+
+    # Add a system message if needed
+    # messages.unshift({ role: :system, content: "You are a helpful assistant." })
+
+    RubyCanUseLLM.chat(messages, **options)
+  end
+end
+
+# Usage:
+#   service = CompletionService.new
+#   response = service.call("What is Ruby?")
+#   puts response.content
+#   puts "Tokens used: #{response.total_tokens}"

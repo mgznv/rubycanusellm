@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+RubyCanUseLLM.configure do |config|
+  # Choose your provider: :openai or :anthropic
+  config.provider = :openai
+
+  # Your API key (use environment variables in production)
+  config.api_key = ENV["LLM_API_KEY"]
+
+  # Default model (optional, each provider has a sensible default)
+  # OpenAI: "gpt-4o-mini", Anthropic: "claude-sonnet-4-20250514"
+  # config.model = "gpt-4o-mini"
+
+  # Request timeout in seconds (default: 30)
+  # config.timeout = 30
+end
