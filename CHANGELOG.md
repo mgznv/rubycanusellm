@@ -1,5 +1,16 @@
-## [Unreleased]
+# Changelog
 
-## [0.1.0] - 2026-03-31
+## [0.1.0] - 2025-04-01
 
-- Initial release
+### Added
+
+- Unified client interface for LLM providers
+- OpenAI provider (chat completions)
+- Anthropic provider (chat completions)
+- Configuration module with validation
+- Unified Response object with token tracking
+- Error handling: AuthenticationError, RateLimitError, TimeoutError, ProviderError
+- CLI with generators:
+  - `generate:config` — scaffolds configuration file
+  - `generate:completion` — scaffolds completion service object
+- Rails and plain Ruby project detection for generators
