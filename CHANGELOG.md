@@ -8,6 +8,7 @@
 - Ollama provider (chat + embeddings, local, no API key required)
 - `config.base_url` for pointing to custom Ollama instances
 - Mistral and Ollama added to `EMBEDDING_PROVIDERS`
+- `generate:embedding` command — scaffolds an embedding service with `embed`, `similarity`, and `most_similar` methods
 
 ## [0.3.1] - 2026-04-03
 

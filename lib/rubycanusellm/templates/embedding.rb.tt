@@ -1,0 +1,37 @@
+# frozen_string_literal: true
+
+class EmbeddingService
+  def embed(text, **options)
+    RubyCanUseLLM.embed(text, **options)
+  end
+
+  def similarity(text_a, text_b, **options)
+    response_a = embed(text_a, **options)
+    response_b = embed(text_b, **options)
+    response_a.cosine_similarity(response_b.embedding)
+  end
+
+  def most_similar(query, candidates, **options)
+    query_embedding = embed(query, **options)
+    candidates.max_by do |candidate|
+      response = embed(candidate, **options)
+      query_embedding.cosine_similarity(response.embedding)
+    end
+  end
+end
+
+# Usage:
+#   service = EmbeddingService.new
+#
+#   # Get an embedding vector
+#   response = service.embed("Hello world")
+#   puts response.embedding  # [0.1, 0.2, ...]
+#   puts response.tokens     # 3
+#
+#   # Compare two texts
+#   score = service.similarity("cat", "dog")
+#   puts score  # 0.87
+#
+#   # Find the most similar candidate
+#   best = service.most_similar("ruby programming", ["python", "ruby", "javascript"])
+#   puts best  # "ruby"

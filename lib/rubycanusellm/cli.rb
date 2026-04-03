@@ -5,7 +5,8 @@ module RubyCanUseLLM
   class CLI
     COMMANDS = {
       "generate:config" => :generate_config,
-      "generate:completion" => :generate_completion
+      "generate:completion" => :generate_completion,
+      "generate:embedding" => :generate_embedding
     }.freeze
 
     def self.start(args)
@@ -19,6 +20,7 @@ module RubyCanUseLLM
         puts "Commands:"
         puts "  generate:config      Generate configuration file"
         puts "  generate:completion  Generate completion service object"
+        puts "  generate:embedding   Generate embedding service object"
       end
     end
 
@@ -43,6 +45,18 @@ module RubyCanUseLLM
       end
 
       write_template("completion", path)
+    end
+
+    def generate_embedding
+      if rails?
+        FileUtils.mkdir_p("app/services")
+        path = "app/services/embedding_service.rb"
+      else
+        FileUtils.mkdir_p("lib")
+        path = "lib/embedding_service.rb"
+      end
+
+      write_template("embedding", path)
     end
 
     private

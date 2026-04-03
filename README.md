@@ -218,7 +218,7 @@ end
 - [x] Voyage AI provider (embeddings)
 - [x] Mistral provider (chat + embeddings)
 - [x] Ollama provider (chat + embeddings, local)
-- [ ] `generate:embedding` command
+- [x] `generate:embedding` command
 - [ ] Tool calling
 
 ## Development
