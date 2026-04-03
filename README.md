@@ -67,6 +67,8 @@ That's it. Same code, different provider.
 |----------|--------|--------|-------|
 | OpenAI | gpt-4o-mini, gpt-4o, etc. | ✅ | Chat + Embeddings |
 | Anthropic | claude-sonnet-4-20250514, etc. | ✅ | Chat only |
+| Mistral | mistral-small-latest, mistral-large-latest, etc. | ✅ | Chat + Embeddings |
+| Ollama | llama3.2, mistral, etc. | ✅ | Chat + Embeddings (local) |
 | Voyage AI | voyage-3.5, voyage-4, etc. | ✅ | Embeddings only |
 
 ## API Reference
@@ -74,12 +76,21 @@ That's it. Same code, different provider.
 ### Configuration
 ```ruby
 RubyCanUseLLM.configure do |config|
-  config.provider = :openai          # :openai or :anthropic
-  config.api_key = "your-key"        # required
+  config.provider = :openai          # :openai, :anthropic, :mistral, or :ollama
+  config.api_key = "your-key"        # required (not needed for Ollama)
   config.model = "gpt-4o-mini"       # optional, has sensible defaults
   config.timeout = 30                # optional, default 30s
+  config.base_url = "http://localhost:11434"  # optional, for Ollama (default shown)
   config.embedding_provider = :voyage  # optional, for separate embedding provider
   config.embedding_api_key = "key"     # required when embedding_provider is set
+end
+```
+
+**Ollama (local, no API key needed):**
+```ruby
+RubyCanUseLLM.configure do |config|
+  config.provider = :ollama
+  # config.base_url = "http://localhost:11434"  # default, change if needed
 end
 ```
 
@@ -109,7 +120,7 @@ RubyCanUseLLM.chat(messages, stream: true) do |chunk|
 end
 ```
 
-Each `chunk` is a `RubyCanUseLLM::Chunk` with `content` (the token text) and `role` (`"assistant"`). Works with both OpenAI and Anthropic.
+Each `chunk` is a `RubyCanUseLLM::Chunk` with `content` (the token text) and `role` (`"assistant"`). Works with OpenAI, Anthropic, Mistral, and Ollama.
 
 ### Response
 ```ruby
@@ -205,8 +216,9 @@ end
 - [x] Streaming support
 - [x] Embeddings + configurable embedding provider
 - [x] Voyage AI provider (embeddings)
+- [x] Mistral provider (chat + embeddings)
+- [x] Ollama provider (chat + embeddings, local)
 - [ ] `generate:embedding` command
-- [ ] Mistral and Ollama providers
 - [ ] Tool calling
 
 ## Development

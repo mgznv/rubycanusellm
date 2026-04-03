@@ -1,22 +1,27 @@
 # frozen_string_literal: true
 
 RubyCanUseLLM.configure do |config|
-  # Choose your provider: :openai or :anthropic
+  # Choose your provider: :openai, :anthropic, :mistral, or :ollama
   config.provider = :openai
 
   # Your API key (use environment variables in production)
+  # Not required for Ollama (runs locally)
   config.api_key = ENV["LLM_API_KEY"]
 
   # Default model (optional, each provider has a sensible default)
   # OpenAI: "gpt-4o-mini", Anthropic: "claude-sonnet-4-20250514"
+  # Mistral: "mistral-small-latest", Ollama: "llama3.2"
   # config.model = "gpt-4o-mini"
 
   # Request timeout in seconds (default: 30)
   # config.timeout = 30
 
+  # Ollama base URL (optional, default: http://localhost:11434)
+  # config.base_url = "http://localhost:11434"
+
   # Embedding provider (optional, defaults to main provider)
   # Anthropic doesn't support embeddings natively.
-  # Use :voyage (recommended by Anthropic) or :openai for embeddings.
+  # Use :voyage (recommended by Anthropic), :openai, :mistral, or :ollama for embeddings.
   # config.embedding_provider = :voyage
   # config.embedding_api_key = ENV["VOYAGE_API_KEY"]
 end

@@ -9,13 +9,17 @@ require_relative "rubycanusellm/providers/base"
 require_relative "rubycanusellm/providers/openai"
 require_relative "rubycanusellm/providers/anthropic"
 require_relative "rubycanusellm/providers/voyage"
+require_relative "rubycanusellm/providers/mistral"
+require_relative "rubycanusellm/providers/ollama"
 require_relative "rubycanusellm/embedding_response"
 
 module RubyCanUseLLM
   PROVIDERS = {
     openai: Providers::OpenAI,
     anthropic: Providers::Anthropic,
-    voyage: Providers::Voyage
+    voyage: Providers::Voyage,
+    mistral: Providers::Mistral,
+    ollama: Providers::Ollama
   }.freeze
 
   class << self

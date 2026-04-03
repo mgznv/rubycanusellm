@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0] - 2026-04-03
+
+### Added
+
+- Mistral provider (chat + embeddings)
+- Ollama provider (chat + embeddings, local, no API key required)
+- `config.base_url` for pointing to custom Ollama instances
+- Mistral and Ollama added to `EMBEDDING_PROVIDERS`
+
 ## [0.3.1] - 2026-04-03
 
 ### Added

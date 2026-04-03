@@ -2,10 +2,10 @@
 
 module RubyCanUseLLM
   class Configuration
-    SUPPORTED_PROVIDERS = %i[openai anthropic voyage].freeze
-    EMBEDDING_PROVIDERS = %i[openai voyage].freeze
+    SUPPORTED_PROVIDERS = %i[openai anthropic voyage mistral ollama].freeze
+    EMBEDDING_PROVIDERS = %i[openai voyage mistral ollama].freeze
 
-    attr_accessor :provider, :api_key, :model, :timeout, :embedding_provider, :embedding_api_key
+    attr_accessor :provider, :api_key, :model, :timeout, :embedding_provider, :embedding_api_key, :base_url
 
     def initialize
       @provider = nil
@@ -14,11 +14,14 @@ module RubyCanUseLLM
       @timeout = 30
       @embedding_provider = nil
       @embedding_api_key = nil
+      @base_url = nil
     end
 
     def validate!
-      raise Error, "provider is required. Use :openai or :anthropic" if provider.nil?
-      raise Error, "api_key is required" if api_key.nil? || api_key.empty?
+      raise Error, "provider is required. Use :openai, :anthropic, :mistral, or :ollama" if provider.nil?
+      unless provider == :ollama
+        raise Error, "api_key is required" if api_key.nil? || api_key.empty?
+      end
       raise Error, "Unknown provider: #{provider}. Supported: #{SUPPORTED_PROVIDERS.join(", ")}" unless SUPPORTED_PROVIDERS.include?(provider)
     end
 
