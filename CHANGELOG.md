@@ -21,3 +21,11 @@
   - `generate:config` — scaffolds configuration file
   - `generate:completion` — scaffolds completion service object
 - Rails and plain Ruby project detection for generators
+
+## [0.3.0] - 2025-04-03
+
+### Added
+
+- Embeddings support for OpenAI provider (text-embedding-3-small)
+- EmbeddingResponse object with cosine similarity helper
+- `RubyCanUseLLM.embed` method
