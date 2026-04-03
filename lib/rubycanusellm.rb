@@ -8,6 +8,7 @@ require_relative "rubycanusellm/chunk"
 require_relative "rubycanusellm/providers/base"
 require_relative "rubycanusellm/providers/openai"
 require_relative "rubycanusellm/providers/anthropic"
+require_relative "rubycanusellm/embedding_response"
 
 module RubyCanUseLLM
   PROVIDERS = {
@@ -38,6 +39,10 @@ module RubyCanUseLLM
 
     def chat(messages, **options, &block)
       client.chat(messages, **options, &block)
+    end
+
+    def embed(text, **options)
+      client.embed(text, **options)
     end
   end
 end

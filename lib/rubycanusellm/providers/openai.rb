@@ -20,6 +20,15 @@ module RubyCanUseLLM
         end
       end
 
+      def embed(text, **options)
+        body = {
+          model: options[:model] || "text-embedding-3-small",
+          input: text
+        }
+        response = embedding_request(body)
+        parse_embedding(response)
+      end
+
       private
 
       def build_body(messages, options)
@@ -115,6 +124,34 @@ module RubyCanUseLLM
           model: data["model"],
           input_tokens: usage["prompt_tokens"],
           output_tokens: usage["completion_tokens"],
+          raw: data
+        )
+      end
+
+      def embedding_request(body)
+        uri = URI("https://api.openai.com/v1/embeddings")
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        http.read_timeout = config.timeout
+
+        req = Net::HTTP::Post.new(uri)
+        req["Authorization"] = "Bearer #{config.api_key}"
+        req["Content-Type"] = "application/json"
+        req.body = body.to_json
+
+        handle_response(http.request(req))
+      rescue Net::ReadTimeout, Net::OpenTimeout
+        raise TimeoutError, "Request to OpenAI timed out after #{config.timeout}s"
+      end
+
+      def parse_embedding(data)
+        embedding = data.dig("data", 0, "embedding")
+        usage = data["usage"]
+
+        EmbeddingResponse.new(
+          embedding: embedding,
+          model: data["model"],
+          tokens: usage["total_tokens"],
           raw: data
         )
       end

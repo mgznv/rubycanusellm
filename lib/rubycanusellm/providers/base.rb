@@ -10,6 +10,10 @@ module RubyCanUseLLM
       def chat(messages, **options)
         raise NotImplementedError, "#{self.class} must implement #chat"
       end
+      
+      def embed(text, **options)
+        raise NotImplementedError, "#{self.class} must implement #embed"
+      end
 
       private
 

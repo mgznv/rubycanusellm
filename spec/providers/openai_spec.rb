@@ -109,4 +109,26 @@ RSpec.describe RubyCanUseLLM::Providers::OpenAI do
       end
     end
   end
+
+  describe "#embed" do
+    let(:embedding_body) do
+      {
+        data: [{ embedding: [0.1, 0.2, 0.3] }],
+        model: "text-embedding-3-small",
+        usage: { total_tokens: 5 }
+      }.to_json
+    end
+
+    it "returns an EmbeddingResponse" do
+      stub_request(:post, "https://api.openai.com/v1/embeddings")
+        .to_return(status: 200, body: embedding_body)
+
+      response = provider.embed("Hello world")
+
+      expect(response).to be_a(RubyCanUseLLM::EmbeddingResponse)
+      expect(response.embedding).to eq([0.1, 0.2, 0.3])
+      expect(response.model).to eq("text-embedding-3-small")
+      expect(response.tokens).to eq(5)
+    end
+  end
 end
