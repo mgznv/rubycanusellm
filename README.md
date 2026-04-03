@@ -63,10 +63,11 @@ That's it. Same code, different provider.
 
 ## Supported Providers
 
-| Provider | Models | Status |
-|----------|--------|--------|
-| OpenAI | gpt-4o-mini, gpt-4o, etc. | ✅ |
-| Anthropic | claude-sonnet-4-20250514, etc. | ✅ |
+| Provider | Models | Status | Notes |
+|----------|--------|--------|-------|
+| OpenAI | gpt-4o-mini, gpt-4o, etc. | ✅ | Chat + Embeddings |
+| Anthropic | claude-sonnet-4-20250514, etc. | ✅ | Chat only |
+| Voyage AI | voyage-3.5, voyage-4, etc. | ✅ | Embeddings only |
 
 ## API Reference
 
@@ -77,6 +78,8 @@ RubyCanUseLLM.configure do |config|
   config.api_key = "your-key"        # required
   config.model = "gpt-4o-mini"       # optional, has sensible defaults
   config.timeout = 30                # optional, default 30s
+  config.embedding_provider = :voyage  # optional, for separate embedding provider
+  config.embedding_api_key = "key"     # required when embedding_provider is set
 end
 ```
 
@@ -118,6 +121,56 @@ response.total_tokens  # 15
 response.raw           # original provider response
 ```
 
+### Embeddings
+
+```ruby
+response = RubyCanUseLLM.embed("Hello world")
+response.embedding  # [0.1, 0.2, ...]
+response.tokens     # 3
+response.model      # "text-embedding-3-small"
+```
+
+**OpenAI users** — embeddings work out of the box, no extra config needed:
+```ruby
+RubyCanUseLLM.configure do |config|
+  config.provider = :openai
+  config.api_key = ENV["OPENAI_API_KEY"]
+end
+
+RubyCanUseLLM.embed("Hello world")
+```
+
+**Anthropic users with Voyage AI** (recommended by Anthropic):
+```ruby
+RubyCanUseLLM.configure do |config|
+  config.provider = :anthropic
+  config.api_key = ENV["ANTHROPIC_API_KEY"]
+  config.embedding_provider = :voyage
+  config.embedding_api_key = ENV["VOYAGE_API_KEY"]
+end
+
+RubyCanUseLLM.embed("Hello world")
+```
+
+**Anthropic users with OpenAI for embeddings:**
+```ruby
+RubyCanUseLLM.configure do |config|
+  config.provider = :anthropic
+  config.api_key = ENV["ANTHROPIC_API_KEY"]
+  config.embedding_provider = :openai
+  config.embedding_api_key = ENV["OPENAI_API_KEY"]
+end
+
+RubyCanUseLLM.embed("Hello world")
+```
+
+**Cosine similarity:**
+```ruby
+a = RubyCanUseLLM.embed("cat")
+b = RubyCanUseLLM.embed("dog")
+a.cosine_similarity(b.embedding)  # 0.87
+```
+
 ### Error Handling
 ```ruby
 begin
@@ -150,7 +203,9 @@ end
 - [x] `generate:completion` command
 - [x] v0.1.0 release
 - [x] Streaming support
-- [ ] Embeddings + `generate:embedding`
+- [x] Embeddings + configurable embedding provider
+- [x] Voyage AI provider (embeddings)
+- [ ] `generate:embedding` command
 - [ ] Mistral and Ollama providers
 - [ ] Tool calling
 

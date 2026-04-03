@@ -13,4 +13,10 @@ RubyCanUseLLM.configure do |config|
 
   # Request timeout in seconds (default: 30)
   # config.timeout = 30
+
+  # Embedding provider (optional, defaults to main provider)
+  # Anthropic doesn't support embeddings natively.
+  # Use :voyage (recommended by Anthropic) or :openai for embeddings.
+  # config.embedding_provider = :voyage
+  # config.embedding_api_key = ENV["VOYAGE_API_KEY"]
 end

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1] - 2026-04-03
+
+### Added
+
+- Voyage AI provider for embeddings (recommended by Anthropic)
+- Configurable embedding provider (`embedding_provider`, `embedding_api_key`)
+- Anthropic users can now use Voyage AI or OpenAI for embeddings
+- Embedding validation with clear error messages
+
 ## [0.2.0] - 2026-04-01
 
 ### Added
