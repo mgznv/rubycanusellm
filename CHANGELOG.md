@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0] - 2026-04-03
+
+### Added
+
+- `RubyCanUseLLM::Prompt` — lightweight prompt template system with ERB and YAML file support
+- Inline prompts via `Prompt.new(system:, user:, assistant:)` + `render(**variables)`
+- File-based prompts via `Prompt.load("path/to/prompt.yml", **variables)`
+- Full ERB support: loops, conditionals, any Ruby expression
+- Clear error messages for missing variables and invalid roles
+
 ## [0.4.1] - 2026-04-03
 
 ### Added

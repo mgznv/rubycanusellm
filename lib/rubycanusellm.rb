@@ -12,6 +12,7 @@ require_relative "rubycanusellm/providers/voyage"
 require_relative "rubycanusellm/providers/mistral"
 require_relative "rubycanusellm/providers/ollama"
 require_relative "rubycanusellm/embedding_response"
+require_relative "rubycanusellm/prompt"
 
 module RubyCanUseLLM
   PROVIDERS = {

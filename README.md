@@ -197,12 +197,53 @@ rescue RubyCanUseLLM::ProviderError => e
 end
 ```
 
+### Prompt Templates
+
+Keep prompts out of your Ruby code. Define them in YAML files with ERB for dynamic content:
+
+```yaml
+# prompts/commodity_analysis.yml
+system: |
+  You are an expert in <%= domain %> classification.
+user: |
+  Analyze this item: <%= description %>
+  <% if references.any? %>
+  Similar references:
+  <% references.each do |ref| %>
+  - <%= ref %>
+  <% end %>
+  <% end %>
+```
+
+```ruby
+messages = RubyCanUseLLM::Prompt.load("prompts/commodity_analysis.yml",
+  domain: "electronics",
+  description: "capacitor 10uF",
+  references: ["ceramic", "electrolytic"]
+)
+RubyCanUseLLM.chat(messages)
+```
+
+For inline prompts:
+
+```ruby
+prompt = RubyCanUseLLM::Prompt.new(
+  system: "You are a <%= role %> assistant.",
+  user: "Help me with: <%= task %>"
+)
+messages = prompt.render(role: "coding", task: "fix this bug")
+RubyCanUseLLM.chat(messages)
+```
+
+ERB is supported in both cases — loops, conditionals, any Ruby expression.
+
 ## Generators
 
 | Command | Description |
 |---------|-------------|
 | `rubycanusellm generate:config` | Configuration file with provider setup |
 | `rubycanusellm generate:completion` | Completion service object |
+| `rubycanusellm generate:embedding` | Embedding service object |
 
 ## Roadmap
 
@@ -219,6 +260,7 @@ end
 - [x] Mistral provider (chat + embeddings)
 - [x] Ollama provider (chat + embeddings, local)
 - [x] `generate:embedding` command
+- [x] Prompt templates (ERB + YAML file-based)
 - [ ] Tool calling
 
 ## Development
