@@ -100,6 +100,47 @@ RSpec.describe RubyCanUseLLM::Providers::Mistral do
     end
   end
 
+  describe "#chat with tools" do
+    let(:tool_call_body) do
+      {
+        choices: [{
+          message: {
+            role: "assistant",
+            content: nil,
+            tool_calls: [{
+              id: "call_xyz",
+              type: "function",
+              function: { name: "translate", arguments: '{"text":"hello","target":"fr"}' }
+            }]
+          }
+        }],
+        model: "mistral-small-latest",
+        usage: { prompt_tokens: 15, completion_tokens: 8 }
+      }.to_json
+    end
+
+    let(:tools) do
+      [{
+        name: "translate",
+        description: "Translate text",
+        parameters: { type: "object", properties: { text: { type: "string" }, target: { type: "string" } }, required: ["text", "target"] }
+      }]
+    end
+
+    it "returns a Response with tool_calls" do
+      stub_request(:post, "https://api.mistral.ai/v1/chat/completions")
+        .to_return(status: 200, body: tool_call_body)
+
+      response = provider.chat([{ role: :user, content: "Translate hello to French" }], tools: tools)
+
+      expect(response.tool_call?).to be true
+      tc = response.tool_calls.first
+      expect(tc.id).to eq("call_xyz")
+      expect(tc.name).to eq("translate")
+      expect(tc.arguments).to eq({ "text" => "hello", "target" => "fr" })
+    end
+  end
+
   describe "#embed" do
     let(:embedding_body) do
       {

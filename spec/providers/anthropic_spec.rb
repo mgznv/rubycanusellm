@@ -72,6 +72,71 @@ RSpec.describe RubyCanUseLLM::Providers::Anthropic do
         .to raise_error(RubyCanUseLLM::ProviderError)
     end
 
+    context "with tools" do
+      let(:tool_call_body) do
+        {
+          content: [
+            { type: "text", text: "I'll check the weather." },
+            { type: "tool_use", id: "toolu_abc", name: "get_weather", input: { "location" => "Paris" } }
+          ],
+          model: "claude-sonnet-4-20250514",
+          usage: { input_tokens: 25, output_tokens: 15 }
+        }.to_json
+      end
+
+      let(:tools) do
+        [{
+          name: "get_weather",
+          description: "Get weather for a city",
+          parameters: { type: "object", properties: { location: { type: "string" } }, required: ["location"] }
+        }]
+      end
+
+      it "returns a Response with tool_calls" do
+        stub_request(:post, "https://api.anthropic.com/v1/messages")
+          .to_return(status: 200, body: tool_call_body)
+
+        response = provider.chat([{ role: :user, content: "Weather in Paris?" }], tools: tools)
+
+        expect(response.tool_call?).to be true
+        expect(response.content).to eq("I'll check the weather.")
+        tc = response.tool_calls.first
+        expect(tc.id).to eq("toolu_abc")
+        expect(tc.name).to eq("get_weather")
+        expect(tc.arguments).to eq({ "location" => "Paris" })
+      end
+
+      it "sends tools in Anthropic format (input_schema, not parameters)" do
+        stub_request(:post, "https://api.anthropic.com/v1/messages")
+          .with { |req| JSON.parse(req.body)["tools"].first.key?("input_schema") }
+          .to_return(status: 200, body: tool_call_body)
+
+        provider.chat([{ role: :user, content: "Weather?" }], tools: tools)
+      end
+
+      it "formats tool result messages as user messages with tool_result content" do
+        tc = RubyCanUseLLM::ToolCall.new(id: "toolu_abc", name: "get_weather", arguments: { "location" => "Paris" })
+        messages = [
+          { role: :user, content: "Weather in Paris?" },
+          { role: :assistant, content: "I'll check.", tool_calls: [tc] },
+          { role: :tool, tool_call_id: "toolu_abc", name: "get_weather", content: "Sunny, 25°C" }
+        ]
+
+        stub_request(:post, "https://api.anthropic.com/v1/messages")
+          .with { |req|
+            body = JSON.parse(req.body)
+            last = body["messages"].last
+            last["role"] == "user" &&
+              last["content"].first["type"] == "tool_result" &&
+              last["content"].first["tool_use_id"] == "toolu_abc"
+          }
+          .to_return(status: 200, body: success_body)
+
+        response = provider.chat(messages, tools: tools)
+        expect(response.content).to eq("Hello!")
+      end
+    end
+
     context "with stream: true" do
       let(:sse_body) do
         [

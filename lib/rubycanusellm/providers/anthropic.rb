@@ -45,12 +45,38 @@ module RubyCanUseLLM
           max_tokens: options[:max_tokens] || 1024
         }
         body[:system] = system if system
+        body[:tools] = format_tools(options[:tools]) if options[:tools]
         body
       end
 
       def format_messages(messages)
         messages.map do |msg|
-          { role: msg[:role].to_s, content: msg[:content] }
+          case msg[:role].to_s
+          when "tool"
+            {
+              role: "user",
+              content: [{ type: "tool_result", tool_use_id: msg[:tool_call_id], content: msg[:content].to_s }]
+            }
+          when "assistant"
+            content = []
+            content << { type: "text", text: msg[:content] } if msg[:content]
+            if msg[:tool_calls]
+              msg[:tool_calls].each do |tc|
+                content << { type: "tool_use", id: tc.id, name: tc.name, input: tc.arguments }
+              end
+            end
+            content.size == 1 && content.first[:type] == "text" ?
+              { role: "assistant", content: content.first[:text] } :
+              { role: "assistant", content: content }
+          else
+            { role: msg[:role].to_s, content: msg[:content] }
+          end
+        end
+      end
+
+      def format_tools(tools)
+        tools.map do |t|
+          { name: t[:name], description: t[:description], input_schema: t[:parameters] }
         end
       end
 
@@ -130,14 +156,27 @@ module RubyCanUseLLM
       end
 
       def parse_response(data)
-        content = data.dig("content", 0, "text")
+        text_content = nil
+        tool_calls = nil
+
+        data["content"].each do |block|
+          case block["type"]
+          when "text"
+            text_content = block["text"]
+          when "tool_use"
+            tool_calls ||= []
+            tool_calls << ToolCall.new(id: block["id"], name: block["name"], arguments: block["input"])
+          end
+        end
+
         usage = data["usage"]
 
         Response.new(
-          content: content,
+          content: text_content,
           model: data["model"],
           input_tokens: usage["input_tokens"],
           output_tokens: usage["output_tokens"],
+          tool_calls: tool_calls,
           raw: data
         )
       end

@@ -36,16 +36,37 @@ module RubyCanUseLLM
       end
 
       def build_body(messages, options)
-        {
+        body = {
           model: options[:model] || config.model || "llama3.2",
           messages: format_messages(messages),
           temperature: options[:temperature] || 0.7
         }
+        body[:tools] = format_tools(options[:tools]) if options[:tools]
+        body
       end
 
       def format_messages(messages)
         messages.map do |msg|
-          { role: msg[:role].to_s, content: msg[:content] }
+          case msg[:role].to_s
+          when "tool"
+            { role: "tool", content: msg[:content].to_s }
+          when "assistant"
+            m = { role: "assistant", content: msg[:content] || "" }
+            if msg[:tool_calls]
+              m[:tool_calls] = msg[:tool_calls].map do |tc|
+                { function: { name: tc.name, arguments: tc.arguments } }
+              end
+            end
+            m
+          else
+            { role: msg[:role].to_s, content: msg[:content] }
+          end
+        end
+      end
+
+      def format_tools(tools)
+        tools.map do |t|
+          { type: "function", function: { name: t[:name], description: t[:description], parameters: t[:parameters] } }
         end
       end
 
@@ -104,11 +125,24 @@ module RubyCanUseLLM
 
       def parse_response(data)
         message = data["message"]
+
+        tool_calls = nil
+        if message["tool_calls"]
+          tool_calls = message["tool_calls"].each_with_index.map do |tc, i|
+            ToolCall.new(
+              id: "call_#{i}",
+              name: tc.dig("function", "name"),
+              arguments: tc.dig("function", "arguments") || {}
+            )
+          end
+        end
+
         Response.new(
           content: message["content"],
           model: data["model"],
           input_tokens: data["prompt_eval_count"] || 0,
           output_tokens: data["eval_count"] || 0,
+          tool_calls: tool_calls,
           raw: data
         )
       end

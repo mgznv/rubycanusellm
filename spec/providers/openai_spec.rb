@@ -110,6 +110,77 @@ RSpec.describe RubyCanUseLLM::Providers::OpenAI do
     end
   end
 
+  describe "#chat with tools" do
+    let(:tool_call_body) do
+      {
+        choices: [{
+          message: {
+            role: "assistant",
+            content: nil,
+            tool_calls: [{
+              id: "call_abc123",
+              type: "function",
+              function: { name: "get_weather", arguments: '{"location":"Paris"}' }
+            }]
+          }
+        }],
+        model: "gpt-4o-mini",
+        usage: { prompt_tokens: 20, completion_tokens: 10 }
+      }.to_json
+    end
+
+    let(:tools) do
+      [{
+        name: "get_weather",
+        description: "Get weather for a city",
+        parameters: { type: "object", properties: { location: { type: "string" } }, required: ["location"] }
+      }]
+    end
+
+    it "returns a Response with tool_calls" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions")
+        .to_return(status: 200, body: tool_call_body)
+
+      response = provider.chat([{ role: :user, content: "Weather in Paris?" }], tools: tools)
+
+      expect(response.tool_call?).to be true
+      expect(response.tool_calls.size).to eq(1)
+      tc = response.tool_calls.first
+      expect(tc).to be_a(RubyCanUseLLM::ToolCall)
+      expect(tc.id).to eq("call_abc123")
+      expect(tc.name).to eq("get_weather")
+      expect(tc.arguments).to eq({ "location" => "Paris" })
+    end
+
+    it "sends tools in the request body" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions")
+        .with { |req| JSON.parse(req.body)["tools"].first["type"] == "function" }
+        .to_return(status: 200, body: tool_call_body)
+
+      provider.chat([{ role: :user, content: "Weather?" }], tools: tools)
+    end
+
+    it "formats tool result messages correctly" do
+      tc = RubyCanUseLLM::ToolCall.new(id: "call_abc123", name: "get_weather", arguments: { "location" => "Paris" })
+      messages = [
+        { role: :user, content: "Weather in Paris?" },
+        { role: :assistant, content: nil, tool_calls: [tc] },
+        { role: :tool, tool_call_id: "call_abc123", name: "get_weather", content: "Sunny, 25°C" }
+      ]
+
+      stub_request(:post, "https://api.openai.com/v1/chat/completions")
+        .with { |req|
+          body = JSON.parse(req.body)
+          body["messages"].last["role"] == "tool" &&
+            body["messages"].last["tool_call_id"] == "call_abc123"
+        }
+        .to_return(status: 200, body: success_body)
+
+      response = provider.chat(messages, tools: tools)
+      expect(response.content).to eq("Hello!")
+    end
+  end
+
   describe "#embed" do
     let(:embedding_body) do
       {

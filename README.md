@@ -197,6 +197,47 @@ rescue RubyCanUseLLM::ProviderError => e
 end
 ```
 
+### Tool Calling
+
+Define tools once, use them with any provider:
+
+```ruby
+tools = [
+  {
+    name: "get_weather",
+    description: "Get current weather for a city",
+    parameters: {
+      type: "object",
+      properties: {
+        location: { type: "string", description: "City name" }
+      },
+      required: ["location"]
+    }
+  }
+]
+
+messages = [{ role: :user, content: "What's the weather in Paris?" }]
+response = RubyCanUseLLM.chat(messages, tools: tools)
+
+if response.tool_call?
+  tc = response.tool_calls.first
+  # tc.id        => "call_abc123"
+  # tc.name      => "get_weather"
+  # tc.arguments => { "location" => "Paris" }
+
+  # Execute the tool and continue the conversation
+  weather = fetch_weather(tc.arguments["location"])
+
+  messages << { role: :assistant, content: response.content, tool_calls: response.tool_calls }
+  messages << { role: :tool, tool_call_id: tc.id, name: tc.name, content: weather }
+
+  final_response = RubyCanUseLLM.chat(messages, tools: tools)
+  puts final_response.content
+end
+```
+
+**Works the same across providers** — OpenAI, Anthropic, Mistral, and Ollama. Format differences (Anthropic uses `input_schema` and `tool_result` messages) are handled internally.
+
 ### Prompt Templates
 
 Keep prompts out of your Ruby code. Define them in YAML files with ERB for dynamic content:
@@ -261,7 +302,7 @@ ERB is supported in both cases — loops, conditionals, any Ruby expression.
 - [x] Ollama provider (chat + embeddings, local)
 - [x] `generate:embedding` command
 - [x] Prompt templates (ERB + YAML file-based)
-- [ ] Tool calling
+- [x] Tool calling
 
 ## Development
 ```bash

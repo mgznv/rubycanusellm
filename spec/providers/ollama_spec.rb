@@ -92,6 +92,43 @@ RSpec.describe RubyCanUseLLM::Providers::Ollama do
     end
   end
 
+  describe "#chat with tools" do
+    let(:tool_call_body) do
+      {
+        message: {
+          role: "assistant",
+          content: "",
+          tool_calls: [{ function: { name: "get_time", arguments: { "timezone" => "UTC" } } }]
+        },
+        model: "llama3.2",
+        done: true,
+        prompt_eval_count: 10,
+        eval_count: 5
+      }.to_json
+    end
+
+    let(:tools) do
+      [{
+        name: "get_time",
+        description: "Get current time",
+        parameters: { type: "object", properties: { timezone: { type: "string" } }, required: ["timezone"] }
+      }]
+    end
+
+    it "returns a Response with tool_calls" do
+      stub_request(:post, "http://localhost:11434/api/chat")
+        .to_return(status: 200, body: tool_call_body)
+
+      response = provider.chat([{ role: :user, content: "What time is it?" }], tools: tools)
+
+      expect(response.tool_call?).to be true
+      tc = response.tool_calls.first
+      expect(tc.id).to eq("call_0")
+      expect(tc.name).to eq("get_time")
+      expect(tc.arguments).to eq({ "timezone" => "UTC" })
+    end
+  end
+
   describe "#embed" do
     let(:embedding_body) do
       {

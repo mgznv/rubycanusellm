@@ -32,16 +32,40 @@ module RubyCanUseLLM
       private
 
       def build_body(messages, options)
-        {
+        body = {
           model: options[:model] || config.model || "gpt-4o-mini",
           messages: format_messages(messages),
           temperature: options[:temperature] || 0.7
         }
+        if options[:tools]
+          body[:tools] = format_tools(options[:tools])
+          body[:tool_choice] = options[:tool_choice] || "auto"
+        end
+        body
       end
 
       def format_messages(messages)
         messages.map do |msg|
-          { role: msg[:role].to_s, content: msg[:content] }
+          case msg[:role].to_s
+          when "tool"
+            { role: "tool", tool_call_id: msg[:tool_call_id], content: msg[:content].to_s }
+          when "assistant"
+            m = { role: "assistant", content: msg[:content] }
+            if msg[:tool_calls]
+              m[:tool_calls] = msg[:tool_calls].map do |tc|
+                { id: tc.id, type: "function", function: { name: tc.name, arguments: tc.arguments.to_json } }
+              end
+            end
+            m
+          else
+            { role: msg[:role].to_s, content: msg[:content] }
+          end
+        end
+      end
+
+      def format_tools(tools)
+        tools.map do |t|
+          { type: "function", function: { name: t[:name], description: t[:description], parameters: t[:parameters] } }
         end
       end
 
@@ -119,11 +143,23 @@ module RubyCanUseLLM
         choice = data.dig("choices", 0, "message")
         usage = data["usage"]
 
+        tool_calls = nil
+        if choice["tool_calls"]
+          tool_calls = choice["tool_calls"].map do |tc|
+            ToolCall.new(
+              id: tc["id"],
+              name: tc.dig("function", "name"),
+              arguments: JSON.parse(tc.dig("function", "arguments"))
+            )
+          end
+        end
+
         Response.new(
           content: choice["content"],
           model: data["model"],
           input_tokens: usage["prompt_tokens"],
           output_tokens: usage["completion_tokens"],
+          tool_calls: tool_calls,
           raw: data
         )
       end

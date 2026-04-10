@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0] - 2026-04-10
+
+### Added
+
+- Tool calling support for OpenAI, Anthropic, Mistral, and Ollama providers
+- `RubyCanUseLLM::ToolCall` object with `id`, `name`, and `arguments` (parsed Hash)
+- `Response#tool_calls` — array of `ToolCall` objects when the model requests a tool, `nil` otherwise
+- `Response#tool_call?` — convenience predicate
+- Unified tool definition format: `[{ name:, description:, parameters: }]` — providers handle format translation internally
+- Anthropic's `tool_use`/`tool_result` format handled transparently
+- Multi-turn tool use: send `role: :tool` messages with `tool_call_id:` and `content:` to continue the conversation
+
 ## [0.5.0] - 2026-04-03
 
 ### Added
