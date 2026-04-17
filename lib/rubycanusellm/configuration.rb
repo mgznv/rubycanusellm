@@ -19,20 +19,23 @@ module RubyCanUseLLM
 
     def validate!
       raise Error, "provider is required. Use :openai, :anthropic, :mistral, or :ollama" if provider.nil?
-      unless provider == :ollama
-        raise Error, "api_key is required" if api_key.nil? || api_key.empty?
-      end
-      raise Error, "Unknown provider: #{provider}. Supported: #{SUPPORTED_PROVIDERS.join(", ")}" unless SUPPORTED_PROVIDERS.include?(provider)
+
+      raise Error, "api_key is required" if provider != :ollama && (api_key.nil? || api_key.empty?)
+      return if SUPPORTED_PROVIDERS.include?(provider)
+
+      raise Error,
+            "Unknown provider: #{provider}. Supported: #{SUPPORTED_PROVIDERS.join(", ")}"
     end
 
     def validate_embedding!
       effective = embedding_provider || provider
       unless EMBEDDING_PROVIDERS.include?(effective)
-        raise Error, "#{provider} does not support embeddings. Set config.embedding_provider to :openai or :voyage and provide config.embedding_api_key"
+        raise Error,
+              "#{provider} does not support embeddings. Set config.embedding_provider to :openai or :voyage and provide config.embedding_api_key"
       end
-      if embedding_provider && (embedding_api_key.nil? || embedding_api_key.empty?)
-        raise Error, "embedding_api_key is required when embedding_provider is set"
-      end
+      return unless embedding_provider && (embedding_api_key.nil? || embedding_api_key.empty?)
+
+      raise Error, "embedding_api_key is required when embedding_provider is set"
     end
   end
 end

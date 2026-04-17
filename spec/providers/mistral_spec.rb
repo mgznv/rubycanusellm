@@ -123,7 +123,8 @@ RSpec.describe RubyCanUseLLM::Providers::Mistral do
       [{
         name: "translate",
         description: "Translate text",
-        parameters: { type: "object", properties: { text: { type: "string" }, target: { type: "string" } }, required: ["text", "target"] }
+        parameters: { type: "object", properties: { text: { type: "string" }, target: { type: "string" } },
+                      required: %w[text target] }
       }]
     end
 

@@ -169,11 +169,11 @@ RSpec.describe RubyCanUseLLM::Providers::OpenAI do
       ]
 
       stub_request(:post, "https://api.openai.com/v1/chat/completions")
-        .with { |req|
+        .with do |req|
           body = JSON.parse(req.body)
           body["messages"].last["role"] == "tool" &&
             body["messages"].last["tool_call_id"] == "call_abc123"
-        }
+        end
         .to_return(status: 200, body: success_body)
 
       response = provider.chat(messages, tools: tools)

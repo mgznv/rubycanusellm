@@ -47,7 +47,8 @@ RSpec.describe RubyCanUseLLM::Providers::Ollama do
         [
           { model: "llama3.2", message: { role: "assistant", content: "Hello" }, done: false }.to_json,
           { model: "llama3.2", message: { role: "assistant", content: "!" }, done: false }.to_json,
-          { model: "llama3.2", message: { role: "assistant", content: "" }, done: true, prompt_eval_count: 10, eval_count: 5 }.to_json
+          { model: "llama3.2", message: { role: "assistant", content: "" }, done: true, prompt_eval_count: 10,
+            eval_count: 5 }.to_json
         ].join("\n")
       end
 

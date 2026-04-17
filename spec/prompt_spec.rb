@@ -19,16 +19,16 @@ RSpec.describe RubyCanUseLLM::Prompt do
       messages = prompt.render(role: "electronics", item: "capacitor")
 
       expect(messages).to eq([
-        { role: :system, content: "You are a electronics expert." },
-        { role: :user, content: "Analyze: capacitor" }
-      ])
+                               { role: :system, content: "You are a electronics expert." },
+                               { role: :user, content: "Analyze: capacitor" }
+                             ])
     end
 
     it "renders ERB loops" do
       prompt = described_class.new(
         user: "Items:\n<% items.each do |i| %>\n- <%= i %>\n<% end %>"
       )
-      messages = prompt.render(items: ["one", "two", "three"])
+      messages = prompt.render(items: %w[one two three])
 
       expect(messages.first[:content]).to include("- one")
       expect(messages.first[:content]).to include("- two")
@@ -82,14 +82,13 @@ RSpec.describe RubyCanUseLLM::Prompt do
       tmpfile.flush
 
       messages = described_class.load(tmpfile.path,
-        domain: "electronics",
-        description: "capacitor 10uF"
-      )
+                                      domain: "electronics",
+                                      description: "capacitor 10uF")
 
       expect(messages).to eq([
-        { role: :system, content: "You are a electronics expert." },
-        { role: :user, content: "Analyze: capacitor 10uF" }
-      ])
+                               { role: :system, content: "You are a electronics expert." },
+                               { role: :user, content: "Analyze: capacitor 10uF" }
+                             ])
     end
 
     it "supports ERB loops in YAML files" do
@@ -102,7 +101,7 @@ RSpec.describe RubyCanUseLLM::Prompt do
       YAML
       tmpfile.flush
 
-      messages = described_class.load(tmpfile.path, refs: ["ceramic", "electrolytic"])
+      messages = described_class.load(tmpfile.path, refs: %w[ceramic electrolytic])
 
       expect(messages.first[:content]).to include("- ceramic")
       expect(messages.first[:content]).to include("- electrolytic")

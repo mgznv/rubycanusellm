@@ -123,13 +123,13 @@ RSpec.describe RubyCanUseLLM::Providers::Anthropic do
         ]
 
         stub_request(:post, "https://api.anthropic.com/v1/messages")
-          .with { |req|
+          .with do |req|
             body = JSON.parse(req.body)
             last = body["messages"].last
             last["role"] == "user" &&
               last["content"].first["type"] == "tool_result" &&
               last["content"].first["tool_use_id"] == "toolu_abc"
-          }
+          end
           .to_return(status: 200, body: success_body)
 
         response = provider.chat(messages, tools: tools)

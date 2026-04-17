@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "net/http"
 require "json"
 
@@ -6,7 +8,7 @@ module RubyCanUseLLM
     class Voyage < Base
       API_URL = "https://api.voyageai.com/v1/embeddings"
 
-      def chat(messages, **options)
+      def chat(_messages, **_options)
         raise Error, "Voyage AI only supports embeddings, not chat completions"
       end
 

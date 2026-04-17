@@ -60,14 +60,14 @@ module RubyCanUseLLM
           when "assistant"
             content = []
             content << { type: "text", text: msg[:content] } if msg[:content]
-            if msg[:tool_calls]
-              msg[:tool_calls].each do |tc|
-                content << { type: "tool_use", id: tc.id, name: tc.name, input: tc.arguments }
-              end
+            msg[:tool_calls]&.each do |tc|
+              content << { type: "tool_use", id: tc.id, name: tc.name, input: tc.arguments }
             end
-            content.size == 1 && content.first[:type] == "text" ?
-              { role: "assistant", content: content.first[:text] } :
+            if content.size == 1 && content.first[:type] == "text"
+              { role: "assistant", content: content.first[:text] }
+            else
               { role: "assistant", content: content }
+            end
           else
             { role: msg[:role].to_s, content: msg[:content] }
           end
