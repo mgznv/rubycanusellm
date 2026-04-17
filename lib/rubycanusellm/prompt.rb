@@ -9,12 +9,8 @@ module RubyCanUseLLM
 
     def initialize(**roles)
       invalid = roles.keys.map(&:to_s) - VALID_ROLES
-      unless invalid.empty?
-        raise Error, "Invalid role(s): #{invalid.join(", ")}. Valid roles: #{VALID_ROLES.join(", ")}"
-      end
-      if !roles.key?(:user) && !roles.key?("user")
-        raise Error, "Prompt requires at least a :user role"
-      end
+      raise Error, "Invalid role(s): #{invalid.join(", ")}. Valid roles: #{VALID_ROLES.join(", ")}" unless invalid.empty?
+      raise Error, "Prompt requires at least a :user role" if !roles.key?(:user) && !roles.key?("user")
 
       @roles = roles.transform_keys(&:to_sym)
     end
@@ -23,9 +19,7 @@ module RubyCanUseLLM
       raise Error, "Prompt file not found: #{path}" unless File.exist?(path)
 
       data = YAML.safe_load(File.read(path))
-      unless data.is_a?(Hash)
-        raise Error, "Prompt file must be a YAML hash with role keys (system, user, assistant)"
-      end
+      raise Error, "Prompt file must be a YAML hash with role keys (system, user, assistant)" unless data.is_a?(Hash)
 
       roles = data.transform_keys(&:to_sym).slice(*VALID_ROLES.map(&:to_sym))
       new(**roles).render(**variables)
@@ -35,6 +29,7 @@ module RubyCanUseLLM
       binding_obj = build_binding(variables)
       @roles.filter_map do |role, template|
         next if template.nil? || template.strip.empty?
+
         content = ERB.new(template, trim_mode: "-").result(binding_obj)
         { role: role, content: content.strip }
       end
