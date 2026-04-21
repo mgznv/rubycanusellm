@@ -8,7 +8,8 @@ module RubyCanUseLLM
       "generate:config" => :generate_config,
       "generate:completion" => :generate_completion,
       "generate:embedding" => :generate_embedding,
-      "generate:agent" => :generate_agent
+      "generate:agent" => :generate_agent,
+      "generate:chat" => :generate_chat
     }.freeze
 
     def self.start(args)
@@ -24,6 +25,7 @@ module RubyCanUseLLM
         puts "  generate:completion  Generate completion service object"
         puts "  generate:embedding   Generate embedding service object"
         puts "  generate:agent       Generate agent service object with tool loop"
+        puts "  generate:chat        Generate stateful chat service object with message history"
       end
     end
 
@@ -72,6 +74,18 @@ module RubyCanUseLLM
       end
 
       write_template("agent", path)
+    end
+
+    def generate_chat
+      if rails?
+        FileUtils.mkdir_p("app/services")
+        path = "app/services/chat_service.rb"
+      else
+        FileUtils.mkdir_p("lib")
+        path = "lib/chat_service.rb"
+      end
+
+      write_template("chat", path)
     end
 
     private

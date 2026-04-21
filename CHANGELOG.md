@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.0] - 2026-04-21
+
+### Added
+
+- `generate:chat` — scaffolds a stateful `ChatService` with message history
+- `ChatService#say(message)` — sends a message and appends both user and assistant turns to history
+- `ChatService#reset!` — clears history while preserving the system prompt
+- `ChatService#history` — returns a copy of the current message array
+- Optional `system_prompt:` argument on `ChatService.new`
+
 ## [0.7.0] - 2026-04-21
 
 ### Added

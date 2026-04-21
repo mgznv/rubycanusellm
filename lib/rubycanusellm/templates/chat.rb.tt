@@ -1,0 +1,32 @@
+# frozen_string_literal: true
+
+class ChatService
+  def initialize(system_prompt: nil, **options)
+    @options = options
+    @messages = []
+    @messages << { role: :system, content: system_prompt } if system_prompt
+  end
+
+  def say(user_message)
+    @messages << { role: :user, content: user_message }
+    response = RubyCanUseLLM.chat(@messages, **@options)
+    @messages << { role: :assistant, content: response.content }
+    response
+  end
+
+  def reset!
+    system = @messages.first if @messages.first&.fetch(:role) == :system
+    @messages = system ? [system] : []
+  end
+
+  def history
+    @messages.dup
+  end
+end
+
+# Usage:
+#   chat = ChatService.new(system_prompt: "You are a helpful assistant.")
+#   puts chat.say("My name is Juan").content   # => "Hi Juan!"
+#   puts chat.say("What's my name?").content   # => "Your name is Juan."
+#
+#   chat.reset!  # clears history, keeps system prompt

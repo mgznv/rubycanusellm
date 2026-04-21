@@ -50,9 +50,50 @@ RSpec.describe RubyCanUseLLM::CLI do
     end
   end
 
+  describe "generate:chat" do
+    context "in a plain Ruby project" do
+      it "creates lib/chat_service.rb" do
+        described_class.start(["generate:chat"])
+        expect(File).to exist("lib/chat_service.rb")
+      end
+
+      it "scaffolds ChatService with say, reset!, and history" do
+        described_class.start(["generate:chat"])
+        content = File.read("lib/chat_service.rb")
+
+        expect(content).to include("class ChatService")
+        expect(content).to include("def say")
+        expect(content).to include("def reset!")
+        expect(content).to include("def history")
+        expect(content).to include("RubyCanUseLLM.chat")
+        expect(content).to include("role: :user")
+        expect(content).to include("role: :assistant")
+      end
+
+      it "does not overwrite an existing file" do
+        FileUtils.mkdir_p("lib")
+        File.write("lib/chat_service.rb", "# existing")
+        described_class.start(["generate:chat"])
+        expect(File.read("lib/chat_service.rb")).to eq("# existing")
+      end
+    end
+
+    context "in a Rails project" do
+      before do
+        FileUtils.mkdir_p("config")
+        File.write("config/application.rb", "# rails")
+      end
+
+      it "creates app/services/chat_service.rb" do
+        described_class.start(["generate:chat"])
+        expect(File).to exist("app/services/chat_service.rb")
+      end
+    end
+  end
+
   describe "unknown command" do
     it "prints usage info" do
-      expect { described_class.start(["unknown"]) }.to output(/generate:agent/).to_stdout
+      expect { described_class.start(["unknown"]) }.to output(/generate:chat/).to_stdout
     end
   end
 end
