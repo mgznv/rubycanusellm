@@ -181,6 +181,32 @@ RSpec.describe RubyCanUseLLM::Providers::OpenAI do
     end
   end
 
+  describe "#chat with response_format: :json" do
+    let(:json_body) do
+      {
+        choices: [{ message: { role: "assistant", content: '{"name":"Juan","age":30}' } }],
+        model: "gpt-4o-mini",
+        usage: { prompt_tokens: 10, completion_tokens: 8 }
+      }.to_json
+    end
+
+    it "sends response_format json_object in request body" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions")
+        .with { |req| JSON.parse(req.body)["response_format"] == { "type" => "json_object" } }
+        .to_return(status: 200, body: json_body)
+
+      provider.chat([{ role: :user, content: "Return JSON" }], response_format: :json)
+    end
+
+    it "response.parsed returns a Hash" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions")
+        .to_return(status: 200, body: json_body)
+
+      response = provider.chat([{ role: :user, content: "Return JSON" }], response_format: :json)
+      expect(response.parsed).to eq({ "name" => "Juan", "age" => 30 })
+    end
+  end
+
   describe "#embed" do
     let(:embedding_body) do
       {

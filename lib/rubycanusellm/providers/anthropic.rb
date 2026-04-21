@@ -44,6 +44,10 @@ module RubyCanUseLLM
           messages: format_messages(messages),
           max_tokens: options[:max_tokens] || 1024
         }
+        if options[:response_format] == :json
+          json_instruction = "Respond only with valid JSON. No prose, no markdown, no code fences."
+          system = system ? "#{system}\n\n#{json_instruction}" : json_instruction
+        end
         body[:system] = system if system
         body[:tools] = format_tools(options[:tools]) if options[:tools]
         body

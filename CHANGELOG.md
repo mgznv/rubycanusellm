@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.0] - 2026-04-21
+
+### Added
+
+- `response_format: :json` option for `RubyCanUseLLM.chat` — requests structured JSON output from the model
+- `Response#parsed` — parses `content` as JSON and returns a Hash
+- OpenAI and Mistral: sends `response_format: { type: "json_object" }` natively
+- Ollama: sends `format: "json"` natively
+- Anthropic: injects a JSON instruction into the system prompt (no native JSON mode)
+
 ## [0.8.0] - 2026-04-21
 
 ### Added

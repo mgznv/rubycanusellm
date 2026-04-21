@@ -93,6 +93,34 @@ RSpec.describe RubyCanUseLLM::Providers::Ollama do
     end
   end
 
+  describe "#chat with response_format: :json" do
+    let(:json_body) do
+      {
+        message: { role: "assistant", content: '{"model":"llama","local":true}' },
+        model: "llama3.2",
+        done: true,
+        prompt_eval_count: 10,
+        eval_count: 5
+      }.to_json
+    end
+
+    it "sends format: json in request body" do
+      stub_request(:post, "http://localhost:11434/api/chat")
+        .with { |req| JSON.parse(req.body)["format"] == "json" }
+        .to_return(status: 200, body: json_body)
+
+      provider.chat([{ role: :user, content: "Return JSON" }], response_format: :json)
+    end
+
+    it "response.parsed returns a Hash" do
+      stub_request(:post, "http://localhost:11434/api/chat")
+        .to_return(status: 200, body: json_body)
+
+      response = provider.chat([{ role: :user, content: "Return JSON" }], response_format: :json)
+      expect(response.parsed).to eq({ "model" => "llama", "local" => true })
+    end
+  end
+
   describe "#chat with tools" do
     let(:tool_call_body) do
       {

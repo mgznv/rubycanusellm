@@ -42,6 +42,7 @@ module RubyCanUseLLM
           body[:tools] = format_tools(options[:tools])
           body[:tool_choice] = options[:tool_choice] || "auto"
         end
+        body[:response_format] = { type: "json_object" } if options[:response_format] == :json
         body
       end
 

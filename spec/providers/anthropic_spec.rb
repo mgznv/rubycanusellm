@@ -137,6 +137,47 @@ RSpec.describe RubyCanUseLLM::Providers::Anthropic do
       end
     end
 
+    context "with response_format: :json" do
+      let(:json_body) do
+        {
+          content: [{ type: "text", text: '{"city":"Paris","pop":2161000}' }],
+          model: "claude-sonnet-4-20250514",
+          usage: { input_tokens: 15, output_tokens: 10 }
+        }.to_json
+      end
+
+      it "injects JSON instruction into system prompt" do
+        stub_request(:post, "https://api.anthropic.com/v1/messages")
+          .with { |req| JSON.parse(req.body)["system"].include?("valid JSON") }
+          .to_return(status: 200, body: json_body)
+
+        provider.chat([{ role: :user, content: "Return JSON" }], response_format: :json)
+      end
+
+      it "preserves an existing system prompt when injecting JSON instruction" do
+        stub_request(:post, "https://api.anthropic.com/v1/messages")
+          .with do |req|
+            system = JSON.parse(req.body)["system"]
+            system.include?("You are helpful") && system.include?("valid JSON")
+          end
+          .to_return(status: 200, body: json_body)
+
+        messages = [
+          { role: :system, content: "You are helpful" },
+          { role: :user, content: "Return JSON" }
+        ]
+        provider.chat(messages, response_format: :json)
+      end
+
+      it "response.parsed returns a Hash" do
+        stub_request(:post, "https://api.anthropic.com/v1/messages")
+          .to_return(status: 200, body: json_body)
+
+        response = provider.chat([{ role: :user, content: "Return JSON" }], response_format: :json)
+        expect(response.parsed).to eq({ "city" => "Paris", "pop" => 2_161_000 })
+      end
+    end
+
     context "with stream: true" do
       let(:sse_body) do
         [

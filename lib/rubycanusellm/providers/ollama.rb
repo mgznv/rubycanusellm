@@ -42,6 +42,7 @@ module RubyCanUseLLM
           temperature: options[:temperature] || 0.7
         }
         body[:tools] = format_tools(options[:tools]) if options[:tools]
+        body[:format] = "json" if options[:response_format] == :json
         body
       end
 

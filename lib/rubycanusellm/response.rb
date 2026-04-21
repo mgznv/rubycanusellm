@@ -17,6 +17,10 @@ module RubyCanUseLLM
       !tool_calls.nil? && !tool_calls.empty?
     end
 
+    def parsed
+      JSON.parse(content)
+    end
+
     def total_tokens
       input_tokens + output_tokens
     end
