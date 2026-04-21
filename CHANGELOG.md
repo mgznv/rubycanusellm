@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0] - 2026-04-21
+
+### Added
+
+- `generate:agent` — scaffolds an `AgentService` with a full tool loop
+- Agent handles the `assistant → tool → chat` message cycle automatically up to `MAX_ITERATIONS`
+- `dispatch(name, arguments)` method as the single extension point for connecting tools
+- CLI help text updated to include the new command
+
 ## [0.6.0] - 2026-04-10
 
 ### Added

@@ -1,0 +1,69 @@
+# frozen_string_literal: true
+
+class AgentService
+  MAX_ITERATIONS = 10
+
+  TOOLS = [
+    {
+      name: "get_current_time",
+      description: "Returns the current UTC time",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: []
+      }
+    }
+    # Add more tool definitions here
+  ].freeze
+
+  def call(user_message, **options)
+    messages = [
+      { role: :system, content: system_prompt },
+      { role: :user, content: user_message }
+    ]
+
+    MAX_ITERATIONS.times do
+      response = RubyCanUseLLM.chat(messages, tools: TOOLS, **options)
+
+      return response unless response.tool_call?
+
+      messages << { role: :assistant, content: response.content, tool_calls: response.tool_calls }
+
+      response.tool_calls.each do |tool_call|
+        result = dispatch(tool_call.name, tool_call.arguments)
+        messages << {
+          role: :tool,
+          tool_call_id: tool_call.id,
+          content: result.to_s
+        }
+      end
+    end
+
+    raise "Agent exceeded maximum iterations (#{MAX_ITERATIONS})"
+  end
+
+  private
+
+  def system_prompt
+    "You are a helpful assistant. Use the available tools when needed."
+  end
+
+  def dispatch(name, _arguments)
+    case name
+    when "get_current_time"
+      Time.now.utc.to_s
+    else
+      raise "Unknown tool: #{name}"
+    end
+  end
+end
+
+# Usage:
+#   agent = AgentService.new
+#   response = agent.call("What time is it right now?")
+#   puts response.content
+#
+# Adding a tool:
+#   1. Add the definition to TOOLS (name, description, parameters JSON Schema)
+#   2. Add a when branch in dispatch(name, _arguments) — rename _arguments to arguments when you need them
+#   3. The agent will call tools automatically and loop until it has a final answer

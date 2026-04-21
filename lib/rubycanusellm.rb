@@ -14,6 +14,7 @@ require_relative "rubycanusellm/providers/ollama"
 require_relative "rubycanusellm/embedding_response"
 require_relative "rubycanusellm/tool_call"
 require_relative "rubycanusellm/prompt"
+require_relative "rubycanusellm/cli"
 
 module RubyCanUseLLM
   PROVIDERS = {

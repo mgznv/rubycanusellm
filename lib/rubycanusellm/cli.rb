@@ -7,7 +7,8 @@ module RubyCanUseLLM
     COMMANDS = {
       "generate:config" => :generate_config,
       "generate:completion" => :generate_completion,
-      "generate:embedding" => :generate_embedding
+      "generate:embedding" => :generate_embedding,
+      "generate:agent" => :generate_agent
     }.freeze
 
     def self.start(args)
@@ -22,6 +23,7 @@ module RubyCanUseLLM
         puts "  generate:config      Generate configuration file"
         puts "  generate:completion  Generate completion service object"
         puts "  generate:embedding   Generate embedding service object"
+        puts "  generate:agent       Generate agent service object with tool loop"
       end
     end
 
@@ -58,6 +60,18 @@ module RubyCanUseLLM
       end
 
       write_template("embedding", path)
+    end
+
+    def generate_agent
+      if rails?
+        FileUtils.mkdir_p("app/services")
+        path = "app/services/agent_service.rb"
+      else
+        FileUtils.mkdir_p("lib")
+        path = "lib/agent_service.rb"
+      end
+
+      write_template("agent", path)
     end
 
     private
